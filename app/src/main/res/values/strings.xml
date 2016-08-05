@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">SimpleChat</string>
+    <string name="ed_send">Ваше сообщение</string>
+    <string name="butt_send">=></string>
+    <string name="users_title">Пользователи в чате</string>
+    <string name="chat_title">Последние сообщения</string>
+    <string name="description">Logo!</string>
+    <string name="status_online">ONLINE</string>
+    <string name="status_offline">OFFLINE</string>
+</resources>

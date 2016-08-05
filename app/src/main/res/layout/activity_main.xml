@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="100"
+    tools:context="ru.rdtc.makzzz.chat.MainActivity">
+
+    <!--android:background="@drawable/roundrect"-->
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorButtonNormal"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:contentDescription="@string/description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/logor"
+                android:id="@+id/logo_image" />
+
+            <TextView
+                android:text="@string/status_online"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/menu_choosen_status"
+                android:gravity="center_vertical|center_horizontal" />
+
+
+        </LinearLayout>
+    </android.support.v7.widget.Toolbar>
+
+<TextView
+    android:id="@+id/txtV_users_title"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/users_title" />
+
+<TextView
+    android:id="@+id/txtV_users"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="пользователь" />
+
+<TextView
+    android:id="@+id/txtV_chat_title"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/chat_title" />
+
+<TextView
+    android:layout_weight="85"
+    android:id="@+id/txtV_chat"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:text=""
+    android:maxLines="30"
+    android:scrollbars="vertical" />
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_weight="10"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content"
+        android:weightSum="1">
+
+        <EditText
+            android:id="@+id/ed_send"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:hint="@string/ed_send"
+            android:layout_gravity="start" />
+
+        <Button
+            android:onClick="onSend"
+            android:text="@string/butt_send"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/bSend"
+            android:layout_gravity="end" />
+    </FrameLayout>
+
+</LinearLayout>
