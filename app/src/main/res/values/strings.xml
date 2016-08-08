@@ -7,4 +7,9 @@
     <string name="description">Logo!</string>
     <string name="status_online">ONLINE</string>
     <string name="status_offline">OFFLINE</string>
+    <string name="change_nick">Nickname</string>
+
+    <string name="login_activ_lbl">Choose user nick</string>
+    <string name="hint_login">Type your nick here</string>
+    <string name="butt_send_login">Готово!</string>
 </resources>

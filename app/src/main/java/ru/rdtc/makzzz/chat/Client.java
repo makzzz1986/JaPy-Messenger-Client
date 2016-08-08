@@ -47,6 +47,7 @@ public class Client {
     public void close() {
         try {
             sock_obj.close();
+            conn_chk = false;
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
         }

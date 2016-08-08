@@ -28,13 +28,21 @@
                 android:id="@+id/logo_image" />
 
             <TextView
+                android:layout_weight="1"
                 android:text="@string/status_online"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:id="@+id/menu_choosen_status"
                 android:gravity="center_vertical|center_horizontal" />
 
-
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/butt_change_nick"
+                android:text="@string/change_nick"
+                android:gravity="center_vertical|end"
+                android:onClick="onChangeNick"
+                />
         </LinearLayout>
     </android.support.v7.widget.Toolbar>
 
@@ -75,7 +83,7 @@
 
         <EditText
             android:id="@+id/ed_send"
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/ed_sent_width"
             android:layout_height="match_parent"
             android:hint="@string/ed_send"
             android:layout_gravity="start" />
@@ -85,7 +93,7 @@
             android:text="@string/butt_send"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:id="@+id/bSend"
+            android:id="@+id/butt_Send"
             android:layout_gravity="end" />
     </FrameLayout>
 

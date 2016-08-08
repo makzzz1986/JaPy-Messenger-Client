@@ -1,19 +1,23 @@
 package ru.rdtc.makzzz.chat;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.os.AsyncTask;
-import android.support.annotation.StringRes;
+import android.support.annotation.Dimension;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -29,10 +33,22 @@ public class MainActivity extends AppCompatActivity {
     private boolean need_to_send = false;
     private static final String TAG = "MainActivity";
     private boolean conn_exist = false;
+    private String user_nick = null;
     private int msg_id = 0;
     private int scroll_amount = 0;
     private ImageView logo_image;
+    private Button butt_nick_choose;
     private boolean status_online = true;
+    private Client client = null;
+    // имя файла настроек
+    private static final String APP_PREFERENCES = "settings";
+    // ник
+    private static final String APP_PREFERENCES_USER_NICK = "user_nick";
+    // экземпляр настроек
+    private SharedPreferences mSettings;
+    // номер возвращённого значения
+    private static final int CHOOSE_NICK = 0;
+
 
 
     @Override
@@ -42,6 +58,24 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
+
+        // инициализация важных элементов программно
+        butt_nick_choose = (Button) findViewById(R.id.butt_change_nick);
+
+        // сохранённые настройки
+        mSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
+        // если в настройках есть ник
+        if (mSettings.contains(APP_PREFERENCES_USER_NICK)) {
+            user_nick = mSettings.getString(APP_PREFERENCES_USER_NICK, "default_nick");
+            butt_nick_choose.setText(user_nick);
+            Log.i(TAG, "Get nick from saved settings - " + user_nick);
+        } else {
+            // если ника нет - открываем новое активити с выбором ника
+            user_nick = "no_nick_chosen";
+            Log.i(TAG, "No nick saved, get through LoginActivity");
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivityForResult(intent, CHOOSE_NICK);
+        }
 
         // запуск другого потока
         new LongOperation().execute("");
@@ -68,6 +102,10 @@ public class MainActivity extends AppCompatActivity {
                 status_online = true;
                 txtV_status.setText(R.string.status_online);
                 Log.i(TAG, "Online status set!");
+                if (client == null || client.conn_chk()) {
+                    // запуск потока снова
+                    new LongOperation().execute("");
+                }
                 return true;
 
             case R.id.stat_offline:
@@ -82,6 +120,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // получение логина из другого активити
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Check which request we're responding to
+        if (requestCode == CHOOSE_NICK) {
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+                Log.i(TAG, "We get nick!");
+                user_nick = data.getStringExtra(LoginActivity.NICK);
+                // кладём ник в настройки
+                SharedPreferences.Editor editor = mSettings.edit();
+                editor.putString(APP_PREFERENCES_USER_NICK, user_nick);
+                editor.apply();
+            } else {
+                user_nick = "default_nick";
+            }
+
+        }
+    }
+
+    // нажатие на кнопку ника для его смены
+    public void onChangeNick(View view) {
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        startActivityForResult(intent, CHOOSE_NICK);
+    }
+
+    // собственно, процесс обмена сообщениями, в другом потоке
     private class LongOperation extends AsyncTask<String, String, String> {
         TextView txtV_chat = (TextView) findViewById(R.id.txtV_chat);
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
@@ -98,14 +163,14 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 // создаём сокет через класс Client
-                Client client = new Client(host);
+                client = new Client(host);
                 // проверяем состояние подключения
                 if (client.conn_chk()) {
                     // выставляем в переменную результат подключения
                     conn_exist = true;
 
                     Log.i(TAG, "Start sending");
-                    Msg msg_init = new Msg(true, df.format(Calendar.getInstance().getTime()), msg_id++, "default nick", "INIT_SOCK");
+                    Msg msg_init = new Msg(true, df.format(Calendar.getInstance().getTime()), msg_id++, user_nick, "INIT_SOCK");
                     // отсылаем сообщение
                     client.send(msg_init.getJson(msg_init));
 
@@ -126,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         conn_exist = true;
                         // отправляем запрос за обновлениями на сервер
-                        Msg msg_update = new Msg(true, df.format(Calendar.getInstance().getTime()), msg_id++, "default nick", "UPDATE_REQUEST");
+                        Msg msg_update = new Msg(true, df.format(Calendar.getInstance().getTime()), msg_id++, user_nick, "UPDATE_REQUEST");
                         client.send(msg_update.getJson(msg_update));
                         // ждём ответ от сервера и кладём результат в переменную
                         String response = client.recv();
@@ -161,10 +226,13 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
+        // после прохождения обмена сообщениями
         @Override
         protected void onPostExecute(String result) {
             logo_image = (ImageView) findViewById(R.id.logo_image);
             logo_image.setImageResource(R.mipmap.logor);
+            // обнуляем экземпляр класса, чтобы можно было его заново создать и подключиться
+            client = null;
             Log.i(TAG, "END OF THREAD!\nPostExecute - logo RED!");
         }
 
@@ -174,14 +242,18 @@ public class MainActivity extends AppCompatActivity {
 
         protected void onProgressUpdate(String... progress) {
             // периодически нам нужно проверять, что изменилось на сервере, мы вставляем в чат полученные данные из doInBackground
-//            if (progress[0].equals("> ")) {
-//                Log.i(TAG, "> !");
-//            }
+
             String chat = txtV_chat.getText().toString() + "\n" + progress[0];
             txtV_chat.setText(chat);
-            // ImageView определяем
-            logo_image = (ImageView) findViewById(R.id.logo_image);
 
+            // отрисовываем на кнопочке смена_ника текущий ник, если он изменился
+            if (!user_nick.equals(butt_nick_choose.getText().toString())) {
+                butt_nick_choose.setText(user_nick);
+                Log.i(TAG, "Nickname was changed");
+            }
+
+            // отрисовываем статус подключения
+            logo_image = (ImageView) findViewById(R.id.logo_image);
             // если подключено есть:
             if (conn_exist) {
                 // ставим лого зелёным
@@ -202,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    // нажатие на кнопку отправки сообщения
     public void onSend (View view) {
         EditText ed_send = (EditText) findViewById(R.id.ed_send);
         message = ed_send.getText().toString();

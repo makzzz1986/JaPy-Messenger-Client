@@ -79,6 +79,9 @@ public class MainActivity_backup extends AppCompatActivity {
         }
     }
 
+    public void onChangeNick(View view) {
+    }
+
     private class LongOperation extends AsyncTask<String, String, String> {
         TextView txtV_chat = (TextView) findViewById(R.id.txtV_chat);
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
