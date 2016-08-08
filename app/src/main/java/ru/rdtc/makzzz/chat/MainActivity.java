@@ -5,13 +5,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.AsyncTask;
-import android.support.annotation.Dimension;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -129,6 +127,11 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 Log.i(TAG, "We get nick!");
                 user_nick = data.getStringExtra(LoginActivity.NICK);
+                // отрисовываем на кнопочке смена_ника текущий ник, если он изменился
+                if (!user_nick.equals(butt_nick_choose.getText().toString())) {
+                    butt_nick_choose.setText(user_nick);
+                    Log.i(TAG, "Nickname was changed");
+                }
                 // кладём ник в настройки
                 SharedPreferences.Editor editor = mSettings.edit();
                 editor.putString(APP_PREFERENCES_USER_NICK, user_nick);
@@ -245,12 +248,6 @@ public class MainActivity extends AppCompatActivity {
 
             String chat = txtV_chat.getText().toString() + "\n" + progress[0];
             txtV_chat.setText(chat);
-
-            // отрисовываем на кнопочке смена_ника текущий ник, если он изменился
-            if (!user_nick.equals(butt_nick_choose.getText().toString())) {
-                butt_nick_choose.setText(user_nick);
-                Log.i(TAG, "Nickname was changed");
-            }
 
             // отрисовываем статус подключения
             logo_image = (ImageView) findViewById(R.id.logo_image);
