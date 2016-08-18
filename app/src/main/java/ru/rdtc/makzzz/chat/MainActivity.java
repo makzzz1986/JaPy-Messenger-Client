@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -26,7 +27,8 @@ import java.util.Calendar;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-    private String message = " ";
+    private String message = null;
+    private String srv_message = null;
     private boolean need_to_send = false;
     private static final String TAG = "MainActivity";
     private boolean conn_exist = false;
@@ -117,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // получение логина из другого активити
+    // get login from another activity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
@@ -126,19 +128,30 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 Log.i(TAG, "We get nick!");
                 user_nick = data.getStringExtra(LoginActivity.NICK);
-                // отрисовываем на кнопочке смена_ника текущий ник, если он изменился
+                // if nick was changed - we should send service message about it and change button text
                 if (!user_nick.equals(butt_nick_choose.getText().toString())) {
                     butt_nick_choose.setText(user_nick);
+                    srv_message = "NICK_CHANGE_TO_" + user_nick;
+                    need_to_send = true;
                     Log.i(TAG, "Nickname was changed");
                 }
-                // кладём ник в настройки
+                // put nick to settings
                 SharedPreferences.Editor editor = mSettings.edit();
                 editor.putString(APP_PREFERENCES_USER_NICK, user_nick);
                 editor.apply();
             } else {
-                user_nick = "default_nick";
+                // if user click BACK in LoginActivity - try to take nick from settings
+                mSettings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
+                // if we have nick in settings
+                if (mSettings.contains(APP_PREFERENCES_USER_NICK)) {
+                    user_nick = mSettings.getString(APP_PREFERENCES_USER_NICK, "default_nick");
+                    butt_nick_choose.setText(user_nick);
+                    Log.i(TAG, "Get nick from saved settings - " + user_nick);
+                } else {
+                    // if no nick in settings
+                    user_nick = "default_nick";
+                }
             }
-
         }
     }
 
@@ -197,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
                         client.send(msg_update.getJson(msg_update));
                         // ждём ответ от сервера и кладём результат в переменную
                         String response = client.recv();
+
                         if (response.equals("Connection lost!")) {
                             conn_exist = false;
                             Log.i(TAG, "Connection lost!");
@@ -204,15 +218,25 @@ public class MainActivity extends AppCompatActivity {
                         }
                         // передаём в процесс onProgressUpdate, он опубликует результат в текстовом поле
                         publishProgress(response);
-                        // если стоит флаг что надо что-то передать
 
+                        // if need to send flag is True - we need to send something
                         if (need_to_send) {
-                            Msg newmsg = new Msg(false, df.format(Calendar.getInstance().getTime()), msg_id++, "default nick", message);
-                            // отправляем сообщение
-                            client.send(newmsg.getJson(newmsg));
-                            // убираем флаг отправки и чистим переменную с сообщением
-                            need_to_send = false;
-                            message = "";
+                            // if we have user message
+                            if (message != null) {
+                                Msg newmsg = new Msg(false, df.format(Calendar.getInstance().getTime()), msg_id++, user_nick, message);
+                                client.send(newmsg.getJson(newmsg));
+                                // clear strings and uncheck need_to_send flag
+                                need_to_send = false;
+                                message = null;
+                            }
+
+                            // and if we have some service message i.e. nick change
+                            if (srv_message != null) {
+                                Msg newmsg = new Msg(true, df.format(Calendar.getInstance().getTime()), msg_id++, user_nick, srv_message);
+                                client.send(newmsg.getJson(newmsg));
+                                need_to_send = false;
+                                srv_message = null;
+                            }
                         }
 
                         try {
