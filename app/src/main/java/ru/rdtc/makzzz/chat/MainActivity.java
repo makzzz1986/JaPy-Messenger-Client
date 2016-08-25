@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -52,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "Starting!");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -185,9 +185,11 @@ public class MainActivity extends AppCompatActivity {
                     conn_exist = true;
 
                     Log.i(TAG, "Start sending");
-                    Msg msg_init = new Msg(true, df.format(Calendar.getInstance().getTime()), msg_id++, user_nick, "INIT_SOCK");
+                    Msg msg_init = new Msg(false, df.format(Calendar.getInstance().getTime()), msg_id++, user_nick, "входит в чат!");
                     // отсылаем сообщение
+
                     client.send(msg_init.getJson(msg_init));
+                    Log.i("!!!", msg_init.getJson(msg_init));
 
                     while (true) {
                         // проверка что стоит в режиме работы - онлайн-офлайн
@@ -209,15 +211,18 @@ public class MainActivity extends AppCompatActivity {
                         Msg msg_update = new Msg(true, df.format(Calendar.getInstance().getTime()), msg_id++, user_nick, "UPDATE_REQUEST");
                         client.send(msg_update.getJson(msg_update));
                         // ждём ответ от сервера и кладём результат в переменную
-                        String response = client.recv();
+//                        String response = client.recv();
+                        RecvMsgs response = new RecvMsgs(client.recv());
+                        Log.i(TAG, response.message);
 
-                        if (response.equals("Connection lost!")) {
-                            conn_exist = false;
-                            Log.i(TAG, "Connection lost!");
-                            break;
-                        }
+//                        if (response.equals("Connection lost!")) {
+//                            conn_exist = false;
+//                            Log.i(TAG, "Connection lost!");
+//                            break;
+//                        }
+
                         // передаём в процесс onProgressUpdate, он опубликует результат в текстовом поле
-                        publishProgress(response);
+                        publishProgress(response.getString());
 
                         // if need to send flag is True - we need to send something
                         if (need_to_send) {
@@ -269,7 +274,8 @@ public class MainActivity extends AppCompatActivity {
         protected void onProgressUpdate(String... progress) {
             // периодически нам нужно проверять, что изменилось на сервере, мы вставляем в чат полученные данные из doInBackground
 
-            String chat = txtV_chat.getText().toString() + "\n" + progress[0];
+//            String chat = txtV_chat.getText().toString() + "\n" + progress[0];
+            String chat = txtV_chat.getText().toString() + progress[0];
             txtV_chat.setText(chat);
 
             // отрисовываем статус подключения
