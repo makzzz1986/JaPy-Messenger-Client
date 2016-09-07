@@ -30,6 +30,7 @@ public class RecvMsgs {
             for (int i = 0; i < array.length(); i++) {
                 JSONObject dic = array.getJSONObject(i);
                 if (!dic.getBoolean("srv_tag")) {
+                    resulted += dic.getString("user_nick") + ": ";
                     resulted += dic.getString("msg_text");
                     resulted += "\n";
                 }
@@ -37,7 +38,7 @@ public class RecvMsgs {
         } catch (JSONException e) {
             Log.e(TAG, "can't use JSON, error " + e);
         }
-        Log.i(TAG, "add to chat - " + resulted);
+//        Log.i(TAG, "add to chat - " + resulted);
         return resulted;
     }
 }

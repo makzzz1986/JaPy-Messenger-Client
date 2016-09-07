@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
+        android:text="@string/login_activ_lbl"
         android:id="@+id/textView"
         android:gravity="center_horizontal" />
 
@@ -25,12 +25,29 @@
         android:layout_below="@+id/textView"
         android:gravity="center_horizontal" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/login_activ_ip_lbl"
+        android:id="@+id/login_ipTxt"
+        android:layout_below="@+id/login_edTxt"
+        android:gravity="center_horizontal" />
+
+    <EditText
+        android:hint="@string/hint_ip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/login_edIpTxt"
+        android:layout_below="@+id/login_ipTxt"
+        android:gravity="center_horizontal" />
+
     <Button
         android:id="@+id/butt_login_choose"
         android:text="@string/butt_send_login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/login_edTxt"
+        android:layout_below="@+id/login_edIpTxt"
         android:layout_centerHorizontal="true"
         android:onClick="onLoginSet"/>
 </RelativeLayout>

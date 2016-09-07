@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SimpleChat</string>
+    <string name="app_name">JaPyMessenger</string>
     <string name="ed_send">Ваше сообщение</string>
     <string name="butt_send">=></string>
     <string name="users_title">Пользователи в чате</string>
@@ -12,4 +12,6 @@
     <string name="login_activ_lbl">Choose user nick</string>
     <string name="hint_login">Type your nick here</string>
     <string name="butt_send_login">Готово!</string>
+    <string name="login_activ_ip_lbl">Server name or IP</string>
+    <string name="hint_ip">###.###.###.###</string>
 </resources>

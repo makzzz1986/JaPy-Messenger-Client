@@ -27,7 +27,7 @@ public class Client {
         int[] ports_list = {25901, 25902, 25903, 25904, 25905, 25906, 25907, 25908, 25909, 25910};
 
         for (int i = 0; i < 10; i++) {
-            Log.i(TAG, "trying port - " + ports_list[i]);
+            Log.i(TAG, "trying " + address + ":" + ports_list[i]);
             try {
                 Socket socket = new Socket();
                 socket.connect(new InetSocketAddress(address, ports_list[i]), 1000);
@@ -38,6 +38,14 @@ public class Client {
                 Log.i(TAG, "Connected by " + ports_list[i] + "!!!");
                 break;
             } catch (IOException e) {
+//                Log.e(TAG, e.getMessage());
+                Log.e(TAG, "Socket error " + e + "\n");
+            }
+
+            // sleeping for 0.5 seconds to decrease battery consumption
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
                 Log.e(TAG, e.getMessage());
             }
         }
@@ -78,10 +86,11 @@ public class Client {
         // получаем строку от сервера
         String recv_line = reader.readLine();
         // если ничего не пришло
-        if (recv_line == null || recv_line.equals("") || recv_line.equals("> ")) {
+//        if (recv_line == null || recv_line.equals("") || recv_line.equals("> ")) {
+        if (recv_line == null || recv_line.equals("")) {
             // флаг соединения убираем, возвращаем сообщение о разрыве
             conn_chk = false;
-            return "Connection lost!";
+            return "[{\"user_nick\": \"Lstnr\", \"srv_tag\": true, \"msg_text\": \"Connection lost\", \"srv_msg_id\": 99999, \"cl_id\": 0}]";
         }
         return recv_line;
     }

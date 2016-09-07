@@ -38,14 +38,20 @@ public class MainActivity extends AppCompatActivity {
     private Button butt_nick_choose;
     private boolean status_online = true;
     private Client client = null;
-    // имя файла настроек
+    private String host = null;
+
+    // users list
+
+    // settings filename
     private static final String APP_PREFERENCES = "settings";
-    // ник
+    // user nick
     private static final String APP_PREFERENCES_USER_NICK = "user_nick";
+    //
+    private static final String APP_PREFERENCES_SERVER_IP = "server_ip";
     // экземпляр настроек
     private SharedPreferences mSettings;
     // номер возвращённого значения
-    private static final int CHOOSE_NICK = 0;
+    private static final int CHOOSE_NICK_IP = 0;
 
 
 
@@ -73,8 +79,10 @@ public class MainActivity extends AppCompatActivity {
             user_nick = "no_nick_chosen";
             Log.i(TAG, "No nick saved, get through LoginActivity");
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            startActivityForResult(intent, CHOOSE_NICK);
+            startActivityForResult(intent, CHOOSE_NICK_IP);
         }
+        // getting IP
+        host = (mSettings.getString(APP_PREFERENCES_SERVER_IP, "62.231.161.237"));
 
         // запуск другого потока
         new LongOperation().execute("");
@@ -123,11 +131,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
-        if (requestCode == CHOOSE_NICK) {
+        if (requestCode == CHOOSE_NICK_IP) {
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
-                Log.i(TAG, "We get nick!");
-                user_nick = data.getStringExtra(LoginActivity.NICK);
+                Log.i(TAG, "We get nick and IP");
+                String[] data_from_logAct = data.getStringArrayExtra(LoginActivity.NICK);
+                // get nick
+                user_nick = data_from_logAct[0];
                 // if nick was changed - we should send service message about it and change button text
                 if (!user_nick.equals(butt_nick_choose.getText().toString())) {
                     butt_nick_choose.setText(user_nick);
@@ -135,9 +145,12 @@ public class MainActivity extends AppCompatActivity {
                     need_to_send = true;
                     Log.i(TAG, "Nickname was changed");
                 }
+                // get server ip
+                host = data_from_logAct[1];
                 // put nick to settings
                 SharedPreferences.Editor editor = mSettings.edit();
                 editor.putString(APP_PREFERENCES_USER_NICK, user_nick);
+                editor.putString(APP_PREFERENCES_SERVER_IP, host);
                 editor.apply();
             } else {
                 // if user click BACK in LoginActivity - try to take nick from settings
@@ -150,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     // if no nick in settings
                     user_nick = "default_nick";
+                    host = "62.231.161.237";
                 }
             }
         }
@@ -158,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
     // нажатие на кнопку ника для его смены
     public void onChangeNick(View view) {
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-        startActivityForResult(intent, CHOOSE_NICK);
+        startActivityForResult(intent, CHOOSE_NICK_IP);
     }
 
     // собственно, процесс обмена сообщениями, в другом потоке
@@ -168,24 +182,23 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... params) {
-            InetAddress host = null;
-            // проверяем IP встроенной библиотекой
             try {
-                host = InetAddress.getByName("62.231.161.237");
-            } catch (UnknownHostException e) {
-                Log.e(TAG, e.getMessage());
-            }
-
-            try {
+                InetAddress server_ip = null;
+                // проверяем IP встроенной библиотекой
+                try {
+                    server_ip = InetAddress.getByName(host);
+                } catch (UnknownHostException e) {
+                    Log.e(TAG, e.getMessage());
+                }
                 // создаём сокет через класс Client
-                client = new Client(host);
+                client = new Client(server_ip);
                 // проверяем состояние подключения
                 if (client.conn_chk()) {
                     // выставляем в переменную результат подключения
                     conn_exist = true;
 
                     Log.i(TAG, "Start sending");
-                    Msg msg_init = new Msg(false, df.format(Calendar.getInstance().getTime()), msg_id++, user_nick, "входит в чат!");
+                    Msg msg_init = new Msg(true, df.format(Calendar.getInstance().getTime()), msg_id++, user_nick, "COMING!");
                     // отсылаем сообщение
 
                     client.send(msg_init.getJson(msg_init));
@@ -245,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         try {
-                            Thread.sleep(3000);
+                            Thread.sleep(1000);
                         } catch (InterruptedException e) {
                             Log.e(TAG, e.getMessage());
                         }
